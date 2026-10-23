@@ -1,0 +1,12 @@
+# Starts the Open Policy Agent server with the FinSecure policies.
+#   docker compose up -d       (stop with: docker compose down)
+services:
+  opa:
+    image: openpolicyagent/opa:0.70.0
+    container_name: finsecure-opa
+    command: ["run", "--server", "--addr", "0.0.0.0:8181", "/policies"]
+    volumes:
+      - ./policies:/policies:ro
+    ports:
+      - "8181:8181"
+    restart: unless-stopped

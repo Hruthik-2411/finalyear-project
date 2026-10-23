@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FinSecure - Technical & Security Architecture Report</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1f2937;
+    line-height: 1.55;
+    font-size: 13px;
+    margin: 0;
+    padding: 0;
+  }
+  .header {
+    border-bottom: 3px solid #1e3a8a;
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    color: #1e3a8a;
+    font-size: 24px;
+    margin: 0 0 4px 0;
+    font-weight: 800;
+  }
+  .subtitle {
+    color: #4b5563;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .badge {
+    display: inline-block;
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+  h2 {
+    color: #1e3a8a;
+    font-size: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 6px;
+    margin-top: 24px;
+    margin-bottom: 10px;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #1f2937;
+    font-size: 14px;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    page-break-after: avoid;
+  }
+  p {
+    margin: 0 0 10px 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 16px 0;
+    font-size: 11.5px;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid #d1d5db;
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background-color: #1e3a8a;
+    color: #ffffff;
+    font-weight: 600;
+  }
+  tr:nth-child(even) {
+    background-color: #f9fafb;
+  }
+  .callout {
+    background: #f0fdf4;
+    border-left: 4px solid #16a34a;
+    padding: 10px 14px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+    page-break-inside: avoid;
+  }
+  .callout.warning {
+    background: #fffbeb;
+    border-left-color: #f59e0b;
+  }
+  .callout-title {
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 4px;
+    font-size: 12.5px;
+  }
+  .formula-box {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid #2563eb;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 4px;
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    page-break-inside: avoid;
+  }
+  .formula-title {
+    font-family: -apple-system, sans-serif;
+    font-weight: bold;
+    color: #1e3a8a;
+    margin-bottom: 6px;
+  }
+  .var-desc {
+    margin-top: 8px;
+    font-family: -apple-system, sans-serif;
+    font-size: 11.5px;
+    color: #334155;
+    line-height: 1.5;
+  }
+  .code-token {
+    font-family: monospace;
+    background: #f1f5f9;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #0f172a;
+  }
+  ul, ol {
+    margin: 0 0 12px 0;
+    padding-left: 20px;
+  }
+  li {
+    margin-bottom: 4px;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FinSecure: Trust-Aware Zero-Trust Framework</h1>
+  <div class="subtitle">Continuous Behavioral Security Architecture for Autonomous Multi-Agent Banking Systems</div>
+  <span class="badge">TECHNICAL SPECIFICATION & SECURITY BLOCK VERIFICATION REPORT</span>
+</div>
+
+<h2>1. Executive Summary & Design Philosophy</h2>
+<p>
+  Autonomous Multi-Agent Systems (MAS) powered by Large Language Models (LLMs) represent the frontier of complex enterprise automation. 
+  However, in mission-critical environments such as banking operations, multi-agent architectures introduce existential vulnerabilities. 
+  Standard perimeter security (e.g., authenticating a user at login) fails because <b>once inside, agents trust each other implicitly</b>.
+  An attacker can plant an indirect prompt injection in an invoice memo, customer KYC document, or compliance policy. When an agent reads that data, 
+  it becomes a <i>Confused Deputy</i>, initiating unauthorized fund transfers or escalating privileges across peer agents.
+</p>
+<p>
+  <b>FinSecure</b> solves this via the principle of <b>Complete Mediation</b>:
+  Agents never talk directly to each other, never possess direct database connections, and cannot call external APIs independently.
+  Every single inter-agent message and every tool invocation is packaged into a cryptographically signed envelope and validated at runtime 
+  by a centralized <b>Zero-Trust Security Gateway</b>.
+</p>
+
+<div class="callout">
+  <div class="callout-title">The Complete Mediation Principle</div>
+  Zero-Trust requires that every transaction is verified continuously at every step, not just at session initiation. 
+  Every envelope must prove its sender's cryptographic identity, prove that its action was authorized by the human user's original request, 
+  satisfy declarative role-based and attribute-based security policies, pass burst limits, and comply with non-linear behavioral trust score requirements.
+</div>
+
+<h2>2. High-Level Website Walkthrough (The Demonstration Surface)</h2>
+<p>
+  When accessing the FinSecure platform at <code>http://127.0.0.1:8000</code>, the web dashboard serves as an interactive Security Operations Center (SOC) 
+  specifically tailored to demonstrate multi-agent behavioral security:
+</p>
+<table>
+  <tr>
+    <th style="width: 25%;">Dashboard View</th>
+    <th style="width: 35%;">What the User Sees</th>
+    <th style="width: 40%;">Underlying Security Functionality</th>
+  </tr>
+  <tr>
+    <td><b>1. Overview</b></td>
+    <td>High-level bank metrics (total active accounts, balance volume, fraud cases), gateway decision counts (Approved, Blocked, Escalated, Isolated), and live trust gauges per agent.</td>
+    <td>Real-time telemetry aggregated from SQLite and the in-memory trust engine, showing current posture across the agent mesh.</td>
+  </tr>
+  <tr>
+    <td><b>2. Operations</b></td>
+    <td>Staff prompt input box (e.g. <i>"Transfer Rs 25,000 from ACC-1002 to ACC-1012"</i>). Below it renders the <b>Checkpoint Strip</b> for every message hop.</td>
+    <td>Visualizes envelope evaluation: Identity, Chain, Scope, OPA Policy, Prompt Shield, Burst Limiter, Trust. Shows how each agent hop is vetted.</td>
+  </tr>
+  <tr>
+    <td><b>3. Bank Data</b></td>
+    <td>Interactive tables for Customers, Accounts, Transactions, Loans, Fraud Cases, and Knowledge Base Policies.</td>
+    <td>Displays raw bank records before and after attacks. Staff can inspect injected memos or poisoned KYC documents.</td>
+  </tr>
+  <tr>
+    <td><b>4. Pending Reviews</b></td>
+    <td>Human-in-the-Loop review queue displaying irreversible actions held for human approval (Approve / Reject buttons).</td>
+    <td>When an agent attempts a Tier-2 irreversible action (e.g. <code>unfreeze_account</code> or high-value transfer) with borderline trust or tainted lineage, the Decision Engine issues an <code>ESCALATE</code> verdict.</td>
+  </tr>
+  <tr>
+    <td><b>5. Security Console</b></td>
+    <td>Live, streaming terminal-style feed of decisions, alert banners, blocked envelopes, and isolation events.</td>
+    <td>Powered by an asynchronous WebSocket (<code>/ws</code>) pushing events instantly from the gateway's event bus.</td>
+  </tr>
+  <tr>
+    <td><b>6. Delegation Graph</b></td>
+    <td>Visual Directed Acyclic Graph (DAG) of the current run, color-coded by verdict (green = approved, red = blocked, orange = escalated).</td>
+    <td>Renders the cryptographic Provenance DAG showing how the root Intent Token delegated execution through the Planner, Researcher, and Executor.</td>
+  </tr>
+  <tr>
+    <td><b>7. Trust Monitor</b></td>
+    <td>Interactive charts tracking each agent's trust score over time against isolation and restriction thresholds.</td>
+    <td>Visualizes the non-linear trust formula vs. traditional linear moving average, proving why linear trust fails against reputation laundering.</td>
+  </tr>
+  <tr>
+    <td><b>8. Audit Trail</b></td>
+    <td>Chronological cryptographic Merkle ledger. Features a <b>"Tamper with Row"</b> button and a <b>"Verify Ledger"</b> button.</td>
+    <td>Allows staff to simulate insider database tampering. Verifying re-hashes rows against signed roots stored outside SQLite, pinpointing modified rows.</td>
+  </tr>
+  <tr>
+    <td><b>9. Attack Lab</b></td>
+    <td>Catalog of 6 built-in attack scenarios (Prompt Injection, Confused Deputy, Reputation Laundering, Burst Flood, Audit Tampering, Rogue Identity).</td>
+    <td>Runs attacks side-by-side in Baseline vs. Secured mode to visually demonstrate attacks succeeding in standard systems and failing in FinSecure.</td>
+  </tr>
+  <tr>
+    <td><b>10. Settings & Mode Toggle</b></td>
+    <td>Master <b>Secured / Baseline</b> switch, LLM provider selection (Groq / Ollama / Mock), and individual module checkboxes.</td>
+    <td>Facilitates ablation studies (e.g. turning off the Prompt Shield or Burst Limiter to demonstrate individual module importance).</td>
+  </tr>
+</table>
+
+<div class="page-break"></div>
+
+<h2>3. The Dual-Track Security Proxy Layer</h2>
+<p>
+  The Zero-Trust Security Proxy is divided into two distinct execution tracks to resolve the conflict between complete mediation and performance:
+</p>
+
+<h3>3.1 Synchronous Critical Path (Blocking Inline Enforcement)</h3>
+<p>
+  Implemented in <span class="code-token">backend/gateway/gateway.py</span> in the <span class="code-token">_process()</span> method:
+</p>
+<ol>
+  <li><b>Identity & Certificate Check:</b> Validates the sender's X.509 certificate against the internal CA, checks the revocation list, and verifies the RSA-PSS signature.</li>
+  <li><b>Provenance DAG Verification:</b> Walks parent node hashes back to the root Intent Token to verify lineage authenticity.</li>
+  <li><b>Intent Scope Authorization:</b> Checks whether the requested tool, entities (accounts/loans), and monetary amounts match the human request's scope.</li>
+  <li><b>OPA Policy Engine:</b> Evaluates declarative Rego RBAC (tool permissions) and ABAC rules (account active status, transfer limits, loan credit scores).</li>
+  <li><b>Prompt Shield:</b> Scans tool inputs and messages using regex heuristics and Llama Prompt Guard 2 (86M). Redacts high-risk injection payloads.</li>
+  <li><b>Burst Limiter:</b> Verifies sliding-window request frequency and transfer volume.</li>
+  <li><b>Adaptive Decision Engine:</b> Synthesizes all checks into a definitive verdict (<code>APPROVE</code>, <code>RESTRICT</code>, <code>ESCALATE</code>, <code>BLOCK</code>, <code>ISOLATE</code>).</li>
+</ol>
+<p>
+  <i>Latency Guarantee:</i> The critical path only performs fast cryptographic checks, cached policy lookups, and lightweight classifications (typically &lt; 8ms). 
+  The request thread is blocked until the decision is rendered; unapproved actions are rejected before execution.
+</p>
+
+<h3>3.2 Asynchronous Analytics Track (Non-Blocking Intelligence)</h3>
+<p>
+  Implemented in <span class="code-token">backend/gateway/gateway.py</span> lines 58–116 using a dedicated thread-safe queue and daemon worker thread:
+</p>
+<ul>
+  <li><b>Trust Score Updates:</b> Successful actions enqueue a reward computation. The mathematical trust formula runs asynchronously without slowing down agent responses.</li>
+  <li><b>Behavioral Anomaly Detection:</b> Statistical profiling of transaction amounts runs in the background. Outliers trigger background trust penalties.</li>
+  <li><b>Merkle Ledger Sealing:</b> Every 50 events, pending audit leaves are aggregated into a Merkle tree; the root is signed and committed to disk asynchronously.</li>
+  <li><b>Synchronization Barrier:</b> The <span class="code-token">gateway().flush()</span> method blocks until the queue drains, ensuring deterministic consistency during automated evaluations and testing.</li>
+</ul>
+
+<h2>4. Mathematical Formulations & Parameter Definitions</h2>
+<p>
+  The Behavioral Trust Engine (<span class="code-token">backend/security/behaviour.py</span>) provides mathematical defense against 
+  <b>Reputation Laundering</b>—an attack where an agent compromised by an adversary intentionally executes dozens of trivial benign operations 
+  (e.g., reading account balances) to artificially inflate its trust score before launching an attack.
+</p>
+
+<div class="formula-box">
+  <div class="formula-title">Formula 1: Multiplicative Penalty Decay on Violation</div>
+  <div><b>T<sub>new</sub> = T · (1 - s)</b></div>
+  <div><b>T<sub>v</sub> = T<sub>new</sub>, &nbsp;&nbsp; t<sub>v</sub> = now</b></div>
+  <div class="var-desc">
+    <b>Definitions & Meanings:</b><br>
+    • <b>T</b>: Current trust score of the agent, bounded in [0.0, 1.0]. Initialized at 0.75.<br>
+    • <b>s</b>: Severity weight of the violation: <i>low</i> = 0.20 (burst limits), <i>medium</i> = 0.40 (policy deny), <i>high</i> = 0.60 (intent scope breach), <i>identity</i> = 1.00 (signature forgery).<br>
+    • <b>T<sub>v</sub></b>: Anchor trust level immediately after the violation.<br>
+    • <b>t<sub>v</sub></b>: Unix epoch timestamp when the violation occurred.<br>
+    <i>Impact:</i> Asymmetric punishment. A single high-severity violation drops trust from 0.75 to 0.30 immediately, blocking irreversible actions.
+  </div>
+</div>
+
+<div class="formula-box">
+  <div class="formula-title">Formula 2: Anti-Gaming Dampened Recovery Reward</div>
+  <div><b>T<sub>new</sub> = min( T + η · w<sub>a</sub> · (1 - T), &nbsp; C(t) )</b></div>
+  <div>where: &nbsp; <b>η = η<sub>0</sub> / ( 1 + n<sub>W</sub>(t) )</b></div>
+  <div class="var-desc">
+    <b>Definitions & Meanings:</b><br>
+    • <b>η<sub>0</sub></b>: Base learning rate / trust reward sensitivity (configured at 1.0).<br>
+    • <b>n<sub>W</sub>(t)</b>: The number of successful good actions executed by the agent within sliding time window <b>W</b> (configured at 300 seconds / 5 mins).<br>
+    • <b>η</b>: <b>Anti-Gaming Coefficient</b>. As an agent spams more actions within window W, n<sub>W</sub> increases, which causes η to rapidly decay towards zero. 
+    Packing 30 actions together yields virtually zero reward.<br>
+    • <b>w<sub>a</sub></b>: Action weight based on effort and criticality: <i>read</i> = 0.01, <i>tier-1 write</i> = 0.03, <i>tier-2 write</i> = 0.05, <i>message</i> = 0.005. 
+    Cheap read queries earn almost no trust compared to high-risk verified actions.<br>
+    • <b>(1 - T)</b>: Diminishing returns factor. As trust approaches 1.0, marginal gains asymptotically decrease.
+  </div>
+</div>
+
+<div class="formula-box">
+  <div class="formula-title">Formula 3: Non-Linear Time-Bounded Recovery Ceiling</div>
+  <div><b>C(t) = T<sub>v</sub> + (1 - T<sub>v</sub>) · ( 1 - e <sup>-(t - t<sub>v</sub>) / τ</sup> )</b></div>
+  <div class="var-desc">
+    <b>Definitions & Meanings:</b><br>
+    • <b>C(t)</b>: Hard upper bound (ceiling) on the agent's maximum attainable trust score at elapsed time <i>t</i>.<br>
+    • <b>t - t<sub>v</sub></b>: Real elapsed wall-clock seconds since the last security violation occurred.<br>
+    • <b>τ (tau)</b>: Time constant governing recovery velocity (configured at 1,800 seconds / 30 minutes).<br>
+    <i>Impact:</i> <b>Trust cannot be laundered with volume; it can only be redeemed with time.</b> 
+    Even if an adversary generates 100 successful operations in 60 seconds, C(t) remains pinned near T<sub>v</sub>, 
+    preventing the trust score from climbing above the threshold required to execute high-impact fund transfers.
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<div class="formula-box">
+  <div class="formula-title">Formula 4: Provenance DAG Ancestry Commitment</div>
+  <div><b>NodeHash = SHA-256( PayloadHash || Sort( ParentNodeHashes ) )</b></div>
+  <div class="var-desc">
+    <b>Definitions & Meanings:</b><br>
+    • <b>PayloadHash</b>: SHA-256 digest of the canonical JSON payload (tool name, arguments, or message content).<br>
+    • <b>ParentNodeHashes</b>: Concatenated, sorted hashes of all causal parent envelopes in the delegation graph.<br>
+    <i>Impact:</i> Creates an immutable cryptographic merkle-dag. An adversary cannot modify a middle node in the agent chain without 
+    invalidating all downstream node hashes, guaranteeing complete tamper-detection across agent hops.
+  </div>
+</div>
+
+<div class="formula-box">
+  <div class="formula-title">Formula 5: Merkle Tree Audit Ledger Inclusion Proof</div>
+  <div><b>Leaf<sub>i</sub> = SHA-256( CanonicalJSON( seq, timestamp, event_type, actor, data ) )</b></div>
+  <div><b>Root = MerkleRoot( [ Leaf<sub>0</sub>, Leaf<sub>1</sub>, ..., Leaf<sub>N-1</sub> ] )</b></div>
+  <div class="var-desc">
+    <b>Definitions & Meanings:</b><br>
+    • Every audit event is serialized deterministically (sorted keys, compact delimiters) and hashed into a leaf.<br>
+    • Leaves are paired and hashed recursively: <b>H<sub>parent</sub> = SHA-256( H<sub>left</sub> || H<sub>right</sub> )</b>.<br>
+    • Merkle roots are signed by the Ledger's RSA key and committed to an external append-only file (<code>data/ledger_roots.jsonl</code>) 
+    outside the database. Modifying, inserting, or deleting a single row in SQLite causes tree re-computation to diverge from the signed root.
+  </div>
+</div>
+
+<h2>5. Adaptive Decision Engine: Priority Rules & Action Authorizations</h2>
+<p>
+  Implemented in <span class="code-token">backend/security/decision.py</span>. When the synchronous pipeline finishes checking an envelope, 
+  it evaluates nine deterministic rules top-to-bottom. The first rule that matches determines the verdict:
+</p>
+<table>
+  <tr>
+    <th style="width: 10%;">Rule</th>
+    <th style="width: 25%;">Condition</th>
+    <th style="width: 15%;">Verdict</th>
+    <th style="width: 50%;">Operational Outcome</th>
+  </tr>
+  <tr>
+    <td><b>1</b></td>
+    <td>Identity validation fails, bad signature, or certificate revoked</td>
+    <td><b>BLOCK</b></td>
+    <td>Envelope discarded. Security alert emitted. Sender role cannot be authenticated.</td>
+  </tr>
+  <tr>
+    <td><b>2</b></td>
+    <td>Delegation chain broken or tool call outside signed Intent scope</td>
+    <td><b>BLOCK</b></td>
+    <td>Tool invocation aborted. Prevents Confused Deputy attacks (e.g., executing transfer during inquiry).</td>
+  </tr>
+  <tr>
+    <td><b>3</b></td>
+    <td>OPA policy denies (RBAC or ABAC violation)</td>
+    <td><b>BLOCK</b></td>
+    <td>Action rejected. Enforces limits, prevents inactive account transfers, prevents PII leakage.</td>
+  </tr>
+  <tr>
+    <td><b>4</b></td>
+    <td>Prompt Shield detects high-risk injection payload</td>
+    <td><b>BLOCK</b></td>
+    <td>Malicious instructions redacted or envelope blocked; intent chain marked tainted.</td>
+  </tr>
+  <tr>
+    <td><b>5</b></td>
+    <td>Agent trust &lt; 0.20 or &ge; 3 repeated blocks within 10 minutes</td>
+    <td><b>ISOLATE</b></td>
+    <td>Agent X.509 certificate revoked. Agent is quarantined and cannot send messages or call tools.</td>
+  </tr>
+  <tr>
+    <td><b>6</b></td>
+    <td>Burst limiter tripped (exceeded frequency or velocity quota)</td>
+    <td><b>RESTRICT</b></td>
+    <td>Agent placed into 120-second cooldown. Non-critical requests rejected.</td>
+  </tr>
+  <tr>
+    <td><b>7</b></td>
+    <td>Tier-2 (irreversible) tool call while trust score &lt; 0.40</td>
+    <td><b>BLOCK</b></td>
+    <td>Irreversible writes prohibited for untrusted or penalized agents.</td>
+  </tr>
+  <tr>
+    <td><b>8</b></td>
+    <td>Tier-2 tool call with trust &lt; 0.70, tainted chain, or policy obligation</td>
+    <td><b>ESCALATE</b></td>
+    <td>Action suspended and placed into Pending Reviews table for human supervisor authorization.</td>
+  </tr>
+  <tr>
+    <td><b>9</b></td>
+    <td>All security checks passed</td>
+    <td><b>APPROVE</b></td>
+    <td>Envelope delivered to target agent or Python banking tool executed against database.</td>
+  </tr>
+</table>
+
+<h2>6. Attack Surface Coverage & Verification</h2>
+<table>
+  <tr>
+    <th>Threat Class</th>
+    <th>Real-World Failure Mode</th>
+    <th>FinSecure Defense Guarantee</th>
+  </tr>
+  <tr>
+    <td><b>Confused Deputy</b></td>
+    <td>Harmless user query (e.g. policy lookup) reads poisoned text instructing the agent to transfer Rs 50,000.</td>
+    <td><b>Intent Token Root Scope:</b> Initial prompt sets allowed writes to <code>[]</code>. Tool call to <code>transfer_funds</code> violates intent scope and triggers Rule 2 <code>BLOCK</code>.</td>
+  </tr>
+  <tr>
+    <td><b>Reputation Laundering</b></td>
+    <td>Attacker executes 40 benign queries after a violation to reset moving-average trust.</td>
+    <td><b>Anti-Gaming η & Recovery Ceiling C(t):</b> Recovery is throttled by real elapsed time (τ = 30 min) and action frequency. Spammed actions yield zero trust gain.</td>
+  </tr>
+  <tr>
+    <td><b>Prompt Injection</b></td>
+    <td>Attacker embeds adversarial instructions in transaction memos or KYC documents.</td>
+    <td><b>Dual-Stage Prompt Shield:</b> Llama Prompt Guard 2 detects attack tokens; spotlighting wraps data in markers prohibiting execution.</td>
+  </tr>
+  <tr>
+    <td><b>Audit Tampering</b></td>
+    <td>Insider edits database records to alter transaction amounts or hide illicit activity.</td>
+    <td><b>Signed Merkle Ledger:</b> Recomputing proofs against external signed roots detects tampering and identifies the exact edited row.</td>
+  </tr>
+</table>
+
+<div class="callout" style="margin-top: 20px;">
+  <div class="callout-title">Conclusion</div>
+  FinSecure establishes continuous behavioral security across autonomous LLM multi-agent operations. 
+  By combining cryptographic identities, DAG provenance lineage, declarative policy evaluation, non-linear trust dynamics, 
+  and tamper-evident Merkle auditing, FinSecure ensures that multi-agent systems remain verifiably secure against modern autonomous threats.
+</div>
+
+</body>
+</html>

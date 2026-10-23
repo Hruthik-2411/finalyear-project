@@ -1,0 +1,81 @@
+# FinSecure Zero-Trust MAS - main configuration
+# Secrets (GROQ_API_KEY) go in the .env file, never here.
+
+llm:
+  # groq | ollama | mock
+  #   groq   = real LLM via Groq cloud (needs GROQ_API_KEY in .env)
+  #   ollama = local LLM via Ollama (needs Ollama running)
+  #   mock   = offline, deterministic "worst-case" LLM simulator (always follows
+  #            injected instructions). Used for tests and offline demos.
+  provider: groq
+  groq_model: qwen/qwen3.8-27b
+  groq_url: https://api.groq.com/openai/v1/chat/completions
+  ollama_model: qwen2.5:7b
+  ollama_url: http://localhost:11434
+  temperature: 0
+  seed: 42
+  timeout_s: 60
+  max_retries: 4
+  fallback_to_ollama: false
+
+security:
+  # baseline = Phase 1 system: gateway only logs, never blocks
+  # secured  = full Zero-Trust pipeline
+  mode: secured
+  # Switch modules off for the ablation study (secured mode only)
+  modules:
+    identity: true
+    intent: true      # intent token + delegation-chain verification
+    shield: true      # Prompt Shield
+    policy: true      # OPA policy engine
+    burst: true       # burst limiter
+    trust: true       # behavioural trust engine
+  spotlighting: true  # wrap untrusted tool data in markers before agents see it
+
+shield:
+  use_prompt_guard: true                       # Llama Prompt Guard 2 via Groq
+  prompt_guard_model: meta-llama/llama-prompt-guard-2-86m
+  use_llm_judge: true                          # 2nd stage for medium scores
+  high_threshold: 0.8
+  low_threshold: 0.3
+  chunk_chars: 1500                            # ~512 tokens per Prompt Guard call
+
+opa:
+  url: http://localhost:8181
+  decision_path: /v1/data/finsecure/authz/decision
+  # If the OPA server is not reachable, use the built-in Python evaluator
+  # that implements the same rules as policies/finsecure.rego
+  fallback_local: true
+  timeout_s: 2
+
+trust:
+  initial: 0.75
+  eta0: 1.0
+  window_s: 300          # W: window for counting recent good actions
+  tau_s: 1800            # recovery ceiling time constant (30 min)
+  weights: {read: 0.01, tier1: 0.03, tier2: 0.05, message: 0.005}
+  severity: {low: 0.2, medium: 0.4, high: 0.6, identity: 1.0}
+  thresholds: {normal: 0.7, restricted: 0.4, blocked: 0.2}
+  isolate_blocks: 3      # this many blocks...
+  isolate_window_s: 600  # ...within this many seconds -> isolate
+
+burst:
+  window_s: 60
+  max_reads: 20
+  max_writes: 5
+  amount_window_s: 300
+  max_amount: 300000
+  cooldown_s: 120
+
+audit:
+  batch_size: 50          # seal a Merkle root every N events
+  roots_file: data/ledger_roots.jsonl
+
+banking:
+  single_txn_limit: 100000
+  daily_limit: 200000
+  attacker_account: ACC-9999
+
+server:
+  host: 127.0.0.1
+  port: 8000
